@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
       days: days,
       hours: hours,
       minutes: minutes,
-      seconds: seconds
+      seconds: seconds,
     };
   }
 
@@ -98,35 +98,95 @@ document.addEventListener("DOMContentLoaded", () => {
 
   setClock(".timer", deadline);
 
-
   //modal_window
 
-  const modalTrigger = document.querySelectorAll('[data-modal]'),
-        modal = document.querySelector('.modal'),
-        modalCloseBtn = document.querySelector('[data-close]');
-    
-    console.log(modalTrigger);
-    modalTrigger.forEach((btn) => {
-        btn.addEventListener('click', function () {
-            modal.classList.add('show');
-            modal.classList.remove('hide');
-            document.body.style.overflow = 'hidden';
-        });
-    });
+  const modalTrigger = document.querySelectorAll("[data-modal]"),
+    modal = document.querySelector(".modal"),
+    modalCloseBtn = document.querySelector("[data-close]");
 
-    function closeModal() {
-        modal.classList.add('hide');
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
+  console.log(modalTrigger);
+
+  function openModal() {
+    modal.style.display = "block";
+    document.body.style.overflow = "hidden";
+    clearInterval(modalTimer);
+  }
+
+  modalTrigger.forEach((btn) => {
+    btn.addEventListener("click", openModal);
+  });
+
+  function closeModal() {
+    modal.style.display = "none";
+    document.body.style.overflow = "";
+  }
+
+  modalCloseBtn.addEventListener("click", closeModal);
+
+  modal.addEventListener("keydown", (e) => {
+    if (e.code === "Escape") {
+      closeModal();
+    }
+  });
+
+/*   const modalTimer = setTimeout(openModal, 5000); */
+
+  
+  function showModalByScroll(){ 
+    if(window.documentElement.scrollTop + document.documentElement.clientHeight >= document.documentElement.scrollHeight -1){
+        openModal();
+        window.removeEventListener('scroll', showModalByScroll);
+
+    }
+  }
+
+  window.addEventListener('scroll', showModalByScroll );
+
+  // menu Card classes
+
+  class MenuCard {
+    constructor(src,alt, title,descr,price, parentSelector){
+        this.src = src;
+        this.alt = alt;
+        this.title = title;
+        this.descr = descr;
+        this.price = price;
+        this.transfer = 27;
+        this.parent = document.querySelector(parentSelector);
         
     }
 
-    modalCloseBtn.addEventListener('click', closeModal);
+    changeToUAH() {
+        this.price = this.price * this.transfer;
+    }
 
-    modal.addEventListener('keydown', (e) => {
-        if(e.code ==='Escape' && modal.classList.contains('show')){
-            closeModal();
-        }
-    });
-    
+
+    render(){
+        const element = document.createElement('div');
+        element.innerHTML= `<div class="menu__item">
+        <img src=${this.src} alt=${this.alt}>
+        <h3 class="menu__item-subtitle">${this.title}</h3>
+        <div class="menu__item-descr">${this.descr}</div>
+        <div class="menu__item-divider"></div>
+        <div class="menu__item-price">
+            <div class="menu__item-cost">Цена:</div>
+            <div class="menu__item-total"><span>${this.price}</span> грн/день</div>
+        </div>
+    </div>`;
+        this.parent.append(element);
+        
+    }
+  }
+
+  new MenuCard(
+    "img/tabs/vegy.jpg",
+    "elite",
+    `Меню “Премиум”`,
+    `В меню “Премиум” мы используем не только красивый дизайн упаковки, но
+    и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода
+    в ресторан!`,
+    9,
+    ".menu .container"
+
+  ).render();
 });
