@@ -145,9 +145,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // menu Card classes
 
   class MenuCard {
-    constructor(src,alt, title,descr,price, parentSelector){
+    constructor(src,alt, title,descr,price, parentSelector, ...classes){
         this.src = src;
         this.alt = alt;
+        this.classes = classes;
         this.title = title;
         this.descr = descr;
         this.price = price;
@@ -163,7 +164,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     render(){
         const element = document.createElement('div');
-        element.innerHTML= `<div class="menu__item">
+        this.classes.forEach(className => element.classList.add(className));
+        element.innerHTML= `
         <img src=${this.src} alt=${this.alt}>
         <h3 class="menu__item-subtitle">${this.title}</h3>
         <div class="menu__item-descr">${this.descr}</div>
@@ -172,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="menu__item-cost">Цена:</div>
             <div class="menu__item-total"><span>${this.price}</span> грн/день</div>
         </div>
-    </div>`;
+    `;
         this.parent.append(element);
         
     }
@@ -186,7 +188,65 @@ document.addEventListener("DOMContentLoaded", () => {
     и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода
     в ресторан!`,
     9,
-    ".menu .container"
+    ".menu .container",
+    "menu__item",
+    "big"
 
   ).render();
+
+
+  //form
+
+  const forms = document.querySelectorAll('form');
+
+  const messages = {
+    loading: 'Загрузка',
+    seccess: 'Спасибо! Скоро мы с вами свяжемся',
+    failuer: 'Что-то пошло не так...'
+};
+  
+  forms.forEach(item => {
+    formData(item);
+  });
+
+  function formData(form){
+    form.addEventListener('submit', (e)=> {
+        e.preventDefault();
+
+        const statusMessages = document.createElement('div');
+              statusMessages.classList.add('status');
+              statusMessages.textContent = messages.loading;
+              form.appendChild(statusMessages);
+
+        const request = new XMLHttpRequest;
+
+        request.open('POST', 'server.php');
+
+        request.setRequestHeader('Content-type', 'application/json');
+
+        const formData = new FormData(form);
+
+        const object = {};
+        formData.forEach(function(value, key) {
+            object[key] = value;
+        });
+
+        const json  =  JSON.stringify(object);
+
+        request.send(json);
+
+        request.addEventListener('load', () => {
+            if(request.status === 200){
+                console.log(request.response);
+                statusMessages.textContent = messages.seccess;
+                form.reset();
+                setTimeout(()=> {
+                    statusMessages.remove();
+                }, 2000);
+            } else {
+                statusMessages.textContent = messages.failuer;
+            }
+        })
+    })
+  }
 });
