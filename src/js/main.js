@@ -1,23 +1,24 @@
 document.addEventListener("DOMContentLoaded", () => {
   // tabs
-  const tabs = document.querySelectorAll(".tabheader__item"),
+  let tabs = document.querySelectorAll(".tabheader__item"),
     tabsContent = document.querySelectorAll(".tabcontent"),
     tabsParent = document.querySelector(".tabheader__items");
 
   function HideTabsContent() {
     tabsContent.forEach((item) => {
-      item.classList.add("hide");
-      item.classList.remove("show", "fade");
+      item.style.display = 'none';
     });
+
+    tabs.forEach((tab) => {
+        tab.classList.remove("tabheader__item_active");
+      });
   }
 
-  tabs.forEach((tab) => {
-    tab.classList.remove("tabheader__item_active");
-  });
+  
 
   function showTabContent(i = 0) {
-    tabsContent[i].classList.add("show", "fade");
-    tabsContent[i].classList.remove("hide");
+    tabsContent[i].style.display ='block'
+    
     tabs[i].classList.add("tabheader__item_active");
   }
   HideTabsContent();
@@ -101,13 +102,13 @@ document.addEventListener("DOMContentLoaded", () => {
   //modal_window
 
   const modalTrigger = document.querySelectorAll("[data-modal]"),
-    modal = document.querySelector(".modal"),
-    modalCloseBtn = document.querySelector("[data-close]");
+    modal = document.querySelector(".modal");
 
   console.log(modalTrigger);
 
   function openModal() {
-    modal.style.display = "block";
+    modal.classList.add("modal__show");
+    modal.classList.remove("modal__hide");
     document.body.style.overflow = "hidden";
     clearInterval(modalTimer);
   }
@@ -117,55 +118,53 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function closeModal() {
-    modal.style.display = "none";
+    modal.classList.add("modal__hide");
+    modal.classList.remove("modal__show");
     document.body.style.overflow = "";
   }
 
-  modalCloseBtn.addEventListener("click", closeModal);
+  
 
-  modal.addEventListener("keydown", (e) => {
-    if (e.code === "Escape") {
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal  || e.target.getAttribute('data-close') == '') {
       closeModal();
     }
   });
 
-/*   const modalTimer = setTimeout(openModal, 5000); */
+   const modalTimer = setTimeout(openModal, 500000);  
 
-  
-  function showModalByScroll(){ 
+  /* function showModalByScroll(){ 
     if(window.documentElement.scrollTop + document.documentElement.clientHeight >= document.documentElement.scrollHeight -1){
         openModal();
         window.removeEventListener('scroll', showModalByScroll);
 
     }
-  }
+  } */
 
-  window.addEventListener('scroll', showModalByScroll );
+  /* window.addEventListener('scroll', showModalByScroll ); */
 
   // menu Card classes
 
   class MenuCard {
-    constructor(src,alt, title,descr,price, parentSelector, ...classes){
-        this.src = src;
-        this.alt = alt;
-        this.classes = classes;
-        this.title = title;
-        this.descr = descr;
-        this.price = price;
-        this.transfer = 27;
-        this.parent = document.querySelector(parentSelector);
-        
+    constructor(src, alt, title, descr, price, parentSelector, ...classes) {
+      this.src = src;
+      this.alt = alt;
+      this.classes = classes;
+      this.title = title;
+      this.descr = descr;
+      this.price = price;
+      this.transfer = 27;
+      this.parent = document.querySelector(parentSelector);
     }
 
     changeToUAH() {
-        this.price = this.price * this.transfer;
+      this.price = this.price * this.transfer;
     }
 
-
-    render(){
-        const element = document.createElement('div');
-        this.classes.forEach(className => element.classList.add(className));
-        element.innerHTML= `
+    render() {
+      const element = document.createElement("div");
+      this.classes.forEach((className) => element.classList.add(className));
+      element.innerHTML = `
         <img src=${this.src} alt=${this.alt}>
         <h3 class="menu__item-subtitle">${this.title}</h3>
         <div class="menu__item-descr">${this.descr}</div>
@@ -175,8 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="menu__item-total"><span>${this.price}</span> грн/день</div>
         </div>
     `;
-        this.parent.append(element);
-        
+      this.parent.append(element);
     }
   }
 
@@ -191,62 +189,94 @@ document.addEventListener("DOMContentLoaded", () => {
     ".menu .container",
     "menu__item",
     "big"
-
   ).render();
-
 
   //form
 
-  const forms = document.querySelectorAll('form');
+  const forms = document.querySelectorAll("form");
 
   const messages = {
-    loading: 'Загрузка',
-    seccess: 'Спасибо! Скоро мы с вами свяжемся',
-    failuer: 'Что-то пошло не так...'
-};
-  
-  forms.forEach(item => {
-    formData(item);
+    loading: "Загрузка",
+    seccess: "Спасибо! Скоро мы с вами свяжемся",
+    failuer: "Что-то пошло не так...",
+  };
+
+  forms.forEach((item) => {
+    postData(item);
   });
 
-  function formData(form){
-    form.addEventListener('submit', (e)=> {
-        e.preventDefault();
+  
 
-        const statusMessages = document.createElement('div');
-              statusMessages.classList.add('status');
-              statusMessages.textContent = messages.loading;
-              form.appendChild(statusMessages);
+  function postData(form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
 
-        const request = new XMLHttpRequest;
+      const statusMessages = document.createElement("div");
+      statusMessages.classList.add("status");
+      statusMessages.textContent = messages.loading;
+      form.appendChild(statusMessages);
 
-        request.open('POST', 'server.php');
+      
 
-        request.setRequestHeader('Content-type', 'application/json');
+/*       request.setRequestHeader(); */
 
-        const formData = new FormData(form);
+      const formData = new FormData(form);
 
-        const object = {};
-        formData.forEach(function(value, key) {
-            object[key] = value;
-        });
+      const object = {};
+      formData.forEach(function (value, key) {
+        object[key] = value;
+      });
 
-        const json  =  JSON.stringify(object);
+      fetch('server.php', {
+        method: 'POST',
+        headers: {"Content-type": "application/json"},
+        body: JSON.stringify(object)
+      })
+      
+      .then(data => {
+            console.log(data);
+          showThunkModal(messages.seccess);
+          
+          statusMessages.remove();
+      }).catch(() => {
+        showThunkModal(messages.failuer);
+      }).finally(() => form.reset())
 
-        request.send(json);
-
-        request.addEventListener('load', () => {
-            if(request.status === 200){
-                console.log(request.response);
-                statusMessages.textContent = messages.seccess;
-                form.reset();
-                setTimeout(()=> {
-                    statusMessages.remove();
-                }, 2000);
-            } else {
-                statusMessages.textContent = messages.failuer;
-            }
-        })
-    })
+      /* request.addEventListener("load", () => {
+        if (request.status === 200) {
+          
+          
+            
+          
+        } else {
+            
+        }
+      }); */
+    });
   }
+
+  function showThunkModal(message) {
+    const prevModalDialog = document.querySelector(".modal__dialog");
+    prevModalDialog.classList.add("hide");
+    openModal();
+
+    const thanksModal = document.createElement("div");
+    thanksModal.classList.add("modal__dialog");
+    thanksModal.innerHTML = `
+    <div class="modal__content">
+                <div class="modal__close" data-close>×</div>
+                <div class="modal__title">${message}</div>
+    </div>`;
+    document.querySelector('.modal').append(thanksModal);
+    setTimeout(()=> {
+        thanksModal.remove();
+        prevModalDialog.classList.add('modal__show');
+        prevModalDialog.classList.remove('modal__hide');
+        closeModal();
+      }, 4000)
+  }
+
+
+  
+  
 });

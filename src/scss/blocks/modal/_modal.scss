@@ -57,4 +57,10 @@
         width: 280px;
         margin: 0 auto;
     }
+    &__show{
+        display: block;
+    }
+    &__hide {
+        display: none;
+    }
 }
